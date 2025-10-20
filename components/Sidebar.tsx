@@ -1,9 +1,9 @@
-
 import React from 'react';
 import {
   ReadingNowIcon, BookOpenIcon, FavoritesIcon, ClockIcon, HaveReadIcon, UserIcon, SeriesIcon,
   CollectionsIcon, FormatsIcon, FolderIcon, DownloadIcon, TrashIcon, SettingsIcon
-} from './icons';
+// FIX: Explicitly import from index.tsx to resolve module error.
+} from './icons/index';
 
 interface SidebarProps {
   isOpen: boolean;
