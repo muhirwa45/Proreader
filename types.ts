@@ -7,4 +7,5 @@ export interface Book {
   progressPercent: number;
   lastRead: string;
   isFavorite: boolean;
+  file?: File;
 }
