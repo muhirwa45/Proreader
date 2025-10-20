@@ -59,6 +59,9 @@ const App: React.FC = () => {
   const [activeView, setActiveView] = useState('Reading Now');
   const [books, setBooks] = useState<Book[]>(initialBooks);
   const [collections, setCollections] = useState<Collection[]>(initialCollections);
+  const [bookmarks, setBookmarks] = useState<{ [bookId: number]: number[] }>({
+    2: [5, 12, 23],
+  });
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
     return savedTheme || 'light';
@@ -105,6 +108,17 @@ const App: React.FC = () => {
     }));
   };
 
+  const handleToggleBookmark = (bookId: number, pageNum: number) => {
+    setBookmarks(prev => {
+        const currentBookmarks = prev[bookId] || [];
+        const newBookmarks = currentBookmarks.includes(pageNum)
+            ? currentBookmarks.filter(p => p !== pageNum)
+            : [...currentBookmarks, pageNum].sort((a, b) => a - b);
+        return { ...prev, [bookId]: newBookmarks };
+    });
+  };
+
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       <div className="flex h-screen bg-slate-50 text-slate-800">
@@ -124,10 +138,12 @@ const App: React.FC = () => {
                   activeView={activeView} 
                   books={books}
                   collections={collections}
+                  bookmarks={bookmarks}
                   onToggleFavorite={handleToggleFavorite}
                   onAddBook={handleAddBook}
                   onCreateCollection={createCollection}
                   onToggleBookInCollection={toggleBookInCollection}
+                  onToggleBookmark={handleToggleBookmark}
                 />
             }
           </main>

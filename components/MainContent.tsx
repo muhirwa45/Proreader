@@ -9,20 +9,24 @@ interface MainContentProps {
   activeView: string;
   books: Book[];
   collections: Collection[];
+  bookmarks: { [bookId: number]: number[] };
   onToggleFavorite: (id: number) => void;
   onAddBook: (book: Book) => void;
   onCreateCollection: (name: string) => number;
   onToggleBookInCollection: (bookId: number, collectionId: number) => void;
+  onToggleBookmark: (bookId: number, pageNum: number) => void;
 }
 
 const MainContent: React.FC<MainContentProps> = ({ 
   activeView, 
   books,
   collections,
+  bookmarks,
   onToggleFavorite,
   onAddBook,
   onCreateCollection,
-  onToggleBookInCollection
+  onToggleBookInCollection,
+  onToggleBookmark
 }) => {
   const [sortBy, setSortBy] = useState<'lastRead' | 'title' | 'progress'>('lastRead');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -219,7 +223,12 @@ const MainContent: React.FC<MainContentProps> = ({
 
 
       {isReaderOpen && selectedBook && (
-        <BookReader book={selectedBook} onClose={handleCloseReader} />
+        <BookReader 
+          book={selectedBook} 
+          onClose={handleCloseReader} 
+          bookmarks={bookmarks[selectedBook.id] || []}
+          onToggleBookmark={(pageNum) => onToggleBookmark(selectedBook.id, pageNum)}
+        />
       )}
     </div>
   );

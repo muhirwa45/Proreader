@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Book } from '../types';
 import {
   CloseIcon, HighlightIcon, ZoomInIcon, ZoomOutIcon, ArrowLeftIcon, ArrowRightIcon,
-  SearchIcon, ChevronLeftIcon, ChevronRightIcon
+  SearchIcon, ChevronLeftIcon, ChevronRightIcon, BookmarkIcon, ListIcon, TrashIcon,
 } from './icons/index';
 
 // Set the worker source for pdf.js
@@ -18,9 +18,11 @@ interface SearchResult {
 interface BookReaderProps {
   book: Book;
   onClose: () => void;
+  bookmarks: number[];
+  onToggleBookmark: (pageNum: number) => void;
 }
 
-const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
+const BookReader: React.FC<BookReaderProps> = ({ book, onClose, bookmarks, onToggleBookmark }) => {
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -30,9 +32,11 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [currentResultIndex, setCurrentResultIndex] = useState(-1);
   const [isSearching, setIsSearching] = useState(false);
+  const [isBookmarksPanelOpen, setIsBookmarksPanelOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<number | null>(null);
+  const isCurrentPageBookmarked = bookmarks.includes(currentPage);
 
   // Load PDF document
   useEffect(() => {
@@ -122,7 +126,7 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
   }, []);
 
   const goToNextPage = useCallback(() => {
-    setCurrentPage((prev) => Math.min(totalPages, prev - 1));
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
   }, [totalPages]);
 
   const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,21 +188,20 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
       clearTimeout(searchTimeoutRef.current);
     }
     
-    // Clear results immediately if query is empty
     if (!query) {
       setSearchResults([]);
       setCurrentResultIndex(-1);
+      renderPage(); // Re-render to clear highlights
       return;
     }
 
     setIsSearching(true);
     searchTimeoutRef.current = window.setTimeout(() => {
       performSearch(query);
-    }, 500); // 500ms debounce delay
+    }, 500);
   };
   
   useEffect(() => {
-    // Cleanup timeout on unmount
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
@@ -212,9 +215,13 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
     setCurrentPage(searchResults[index].pageIndex + 1);
   };
 
+  const handleBookmarkJump = (pageNum: number) => {
+    setCurrentPage(pageNum);
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex flex-col z-50" role="dialog" aria-modal="true">
-      <header className="bg-white text-slate-800 p-3 flex items-center justify-between shadow-md flex-shrink-0 border-b border-slate-200">
+      <header className="bg-white text-slate-800 p-3 flex items-center justify-between shadow-md flex-shrink-0 border-b border-slate-200 z-10">
         <div className="flex-1 min-w-0">
           <h2 className="text-lg font-semibold truncate" title={book.title}>{book.title}</h2>
         </div>
@@ -251,30 +258,56 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
           </div>
 
           <div className="border-l border-slate-200 h-6 mx-2"></div>
-          {/* Zoom & Close */}
+          {/* Controls */}
           <button onClick={zoomOut} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Zoom out"><ZoomOutIcon className="h-5 w-5" /></button>
           <button onClick={zoomIn} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Zoom in"><ZoomInIcon className="h-5 w-5" /></button>
-          <button className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Highlight text"><HighlightIcon className="h-5 w-5" /></button>
+          <button onClick={() => onToggleBookmark(currentPage)} className={`p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500 ${isCurrentPageBookmarked ? 'text-brand-teal-500' : ''}`} aria-label={isCurrentPageBookmarked ? 'Remove bookmark' : 'Add bookmark'}>
+            <BookmarkIcon className={`${isCurrentPageBookmarked ? 'fill-current' : ''} h-5 w-5`} />
+          </button>
+          <button onClick={() => setIsBookmarksPanelOpen(!isBookmarksPanelOpen)} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Toggle bookmarks panel"><ListIcon className="h-5 w-5" /></button>
           <div className="border-l border-slate-200 h-6 mx-2"></div>
           <button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Close reader"><CloseIcon className="h-6 w-6" /></button>
         </div>
       </header>
       
-      <main ref={containerRef} className="flex-1 bg-slate-50 overflow-auto p-4 flex justify-center items-start">
-        {error ? (
-           <div className="bg-white rounded-md p-8 text-center shadow-lg">
-             <h3 className="text-xl font-semibold text-red-600">Error</h3>
-             <p className="text-slate-700 mt-2">{error}</p>
-           </div>
-        ) : pdfDoc ? (
-            <canvas ref={canvasRef} className="shadow-2xl"></canvas>
-        ) : (
-          <div className="text-slate-800 text-lg">Loading document...</div>
+      <div className="flex-1 flex overflow-hidden">
+        {isBookmarksPanelOpen && (
+          <aside className="w-64 bg-white p-4 overflow-y-auto border-r border-slate-200 flex-shrink-0">
+            <h3 className="text-lg font-semibold text-slate-800 mb-4">Bookmarks</h3>
+            {bookmarks.length > 0 ? (
+              <ul className="space-y-2">
+                {bookmarks.map(pageNum => (
+                  <li key={pageNum} className="flex justify-between items-center group text-sm">
+                    <button onClick={() => handleBookmarkJump(pageNum)} className="text-slate-700 hover:text-brand-teal-600 text-left flex-1">
+                      Page {pageNum}
+                    </button>
+                    <button onClick={() => onToggleBookmark(pageNum)} className="p-1 rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" aria-label={`Remove bookmark for page ${pageNum}`}>
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-slate-500">No bookmarks added yet.</p>
+            )}
+          </aside>
         )}
-      </main>
+        <main ref={containerRef} className="flex-1 bg-slate-50 overflow-auto p-4 flex justify-center items-start">
+          {error ? (
+            <div className="bg-white rounded-md p-8 text-center shadow-lg">
+              <h3 className="text-xl font-semibold text-red-600">Error</h3>
+              <p className="text-slate-700 mt-2">{error}</p>
+            </div>
+          ) : pdfDoc ? (
+              <canvas ref={canvasRef} className="shadow-2xl"></canvas>
+          ) : (
+            <div className="text-slate-800 text-lg">Loading document...</div>
+          )}
+        </main>
+      </div>
 
       {pdfDoc && !error && (
-        <footer className="bg-white text-slate-800 p-3 flex items-center justify-center shadow-inner flex-shrink-0 border-t border-slate-200">
+        <footer className="bg-white text-slate-800 p-3 flex items-center justify-center shadow-inner flex-shrink-0 border-t border-slate-200 z-10">
           <div className="flex items-center gap-4">
             <button onClick={goToPrevPage} disabled={currentPage === 1} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Previous page">
               <ArrowLeftIcon className="h-6 w-6" />

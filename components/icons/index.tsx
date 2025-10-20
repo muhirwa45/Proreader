@@ -1,6 +1,7 @@
 export { ArrowLeftIcon } from './ArrowLeftIcon';
 export { ArrowRightIcon } from './ArrowRightIcon';
 export { BookIcon } from './BookIcon';
+export { BookmarkIcon } from './BookmarkIcon';
 export { BookOpenIcon } from './BookOpenIcon';
 export { CheckIcon } from './CheckIcon';
 export { ChevronDownIcon } from './ChevronDownIcon';
@@ -15,6 +16,7 @@ export { FolderIcon } from './FolderIcon';
 export { FormatsIcon } from './FormatsIcon';
 export { HaveReadIcon } from './HaveReadIcon';
 export { HighlightIcon } from './HighlightIcon';
+export { ListIcon } from './ListIcon';
 export { MenuIcon } from './MenuIcon';
 export { MoreVerticalIcon } from './MoreVerticalIcon';
 export { PencilIcon } from './PencilIcon';
