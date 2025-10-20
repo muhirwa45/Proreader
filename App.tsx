@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, createContext } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
+import Settings from './components/Settings';
 
 interface ThemeContextType {
   theme: string;
@@ -16,6 +16,7 @@ export const ThemeContext = createContext<ThemeContextType>({
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeView, setActiveView] = useState('Reading Now');
   const [theme, setTheme] = useState(() => {
     // Get saved theme from localStorage or default to 'light'
     const savedTheme = localStorage.getItem('theme');
@@ -31,11 +32,18 @@ const App: React.FC = () => {
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       <div className="flex h-screen bg-slate-50 text-slate-800">
-        <Sidebar isOpen={sidebarOpen} />
+        <Sidebar 
+          isOpen={sidebarOpen} 
+          activeView={activeView}
+          onNavigate={setActiveView} 
+        />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50">
-            <MainContent />
+            {activeView === 'Settings' 
+              ? <Settings /> 
+              : <MainContent activeView={activeView} />
+            }
           </main>
         </div>
       </div>

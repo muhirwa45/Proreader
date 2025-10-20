@@ -182,7 +182,7 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex flex-col z-50" role="dialog" aria-modal="true">
-      <header className="bg-slate-800 text-white p-3 flex items-center justify-between shadow-md flex-shrink-0">
+      <header className="bg-white text-slate-800 p-3 flex items-center justify-between shadow-md flex-shrink-0 border-b border-slate-200">
         <div className="flex-1 min-w-0">
           <h2 className="text-lg font-semibold truncate" title={book.title}>{book.title}</h2>
         </div>
@@ -195,7 +195,7 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-slate-700 rounded-md py-1.5 pl-8 pr-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal-500 w-48"
+                className="bg-slate-100 rounded-md py-1.5 pl-8 pr-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-teal-500 w-48"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
                 <SearchIcon className="h-4 w-4 text-slate-400" />
@@ -204,28 +204,28 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
              {isSearching && <span className="text-sm text-slate-400">Searching...</span>}
              {searchResults.length > 0 && (
               <div className="flex items-center gap-1 text-sm">
-                <span>{currentResultIndex + 1} of {searchResults.length}</span>
-                <button onClick={() => goToResult(currentResultIndex - 1)} disabled={currentResultIndex <= 0} className="p-1 rounded-full hover:bg-slate-700 disabled:opacity-50">
+                <span className="text-slate-600">{currentResultIndex + 1} of {searchResults.length}</span>
+                <button onClick={() => goToResult(currentResultIndex - 1)} disabled={currentResultIndex <= 0} className="p-1 rounded-full text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
                   <ChevronLeftIcon className="h-5 w-5" />
                 </button>
-                <button onClick={() => goToResult(currentResultIndex + 1)} disabled={currentResultIndex >= searchResults.length - 1} className="p-1 rounded-full hover:bg-slate-700 disabled:opacity-50">
+                <button onClick={() => goToResult(currentResultIndex + 1)} disabled={currentResultIndex >= searchResults.length - 1} className="p-1 rounded-full text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
                   <ChevronRightIcon className="h-5 w-5" />
                 </button>
               </div>
             )}
           </form>
 
-          <div className="border-l border-slate-600 h-6 mx-2"></div>
+          <div className="border-l border-slate-200 h-6 mx-2"></div>
           {/* Zoom & Close */}
-          <button onClick={zoomOut} className="p-2 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Zoom out"><ZoomOutIcon className="h-5 w-5" /></button>
-          <button onClick={zoomIn} className="p-2 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Zoom in"><ZoomInIcon className="h-5 w-5" /></button>
-          <button className="p-2 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Highlight text"><HighlightIcon className="h-5 w-5" /></button>
-          <div className="border-l border-slate-600 h-6 mx-2"></div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Close reader"><CloseIcon className="h-6 w-6" /></button>
+          <button onClick={zoomOut} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Zoom out"><ZoomOutIcon className="h-5 w-5" /></button>
+          <button onClick={zoomIn} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Zoom in"><ZoomInIcon className="h-5 w-5" /></button>
+          <button className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Highlight text"><HighlightIcon className="h-5 w-5" /></button>
+          <div className="border-l border-slate-200 h-6 mx-2"></div>
+          <button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Close reader"><CloseIcon className="h-6 w-6" /></button>
         </div>
       </header>
       
-      <main ref={containerRef} className="flex-1 bg-slate-500 overflow-auto p-4 flex justify-center items-start">
+      <main ref={containerRef} className="flex-1 bg-slate-50 overflow-auto p-4 flex justify-center items-start">
         {error ? (
            <div className="bg-white rounded-md p-8 text-center shadow-lg">
              <h3 className="text-xl font-semibold text-red-600">Error</h3>
@@ -234,29 +234,29 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
         ) : pdfDoc ? (
             <canvas ref={canvasRef} className="shadow-2xl"></canvas>
         ) : (
-          <div className="text-white text-lg">Loading document...</div>
+          <div className="text-slate-800 text-lg">Loading document...</div>
         )}
       </main>
 
       {pdfDoc && !error && (
-        <footer className="bg-slate-800 text-white p-3 flex items-center justify-center shadow-inner flex-shrink-0">
+        <footer className="bg-white text-slate-800 p-3 flex items-center justify-center shadow-inner flex-shrink-0 border-t border-slate-200">
           <div className="flex items-center gap-4">
-            <button onClick={goToPrevPage} disabled={currentPage === 1} className="p-2 rounded-full hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Previous page">
+            <button onClick={goToPrevPage} disabled={currentPage === 1} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Previous page">
               <ArrowLeftIcon className="h-6 w-6" />
             </button>
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm text-slate-600">
               <span>Page</span>
               <input 
                 type="number"
                 value={currentPage}
                 onChange={handlePageInputChange}
-                className="w-16 bg-slate-700 text-center rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-brand-teal-500"
+                className="w-16 bg-slate-100 text-slate-700 text-center rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-brand-teal-500"
                 min="1"
                 max={totalPages}
               />
               <span>of {totalPages}</span>
             </div>
-            <button onClick={goToNextPage} disabled={currentPage === totalPages} className="p-2 rounded-full hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Next page">
+            <button onClick={goToNextPage} disabled={currentPage === totalPages} className="p-2 rounded-full text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-teal-500" aria-label="Next page">
               <ArrowRightIcon className="h-6 w-6" />
             </button>
           </div>
