@@ -16,6 +16,8 @@ export { FormatsIcon } from './FormatsIcon';
 export { HaveReadIcon } from './HaveReadIcon';
 export { HighlightIcon } from './HighlightIcon';
 export { MenuIcon } from './MenuIcon';
+export { MoreVerticalIcon } from './MoreVerticalIcon';
+export { PencilIcon } from './PencilIcon';
 export { ReadingNowIcon } from './ReadingNowIcon';
 export { SearchIcon } from './SearchIcon';
 export { SeriesIcon } from './SeriesIcon';

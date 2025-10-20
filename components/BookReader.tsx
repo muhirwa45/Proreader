@@ -32,6 +32,7 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
   const [isSearching, setIsSearching] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<number | null>(null);
 
   // Load PDF document
   useEffect(() => {
@@ -94,7 +95,7 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
       const textContent = await page.getTextContent();
       const pageResults = searchResults.filter(r => r.pageIndex === currentPage - 1);
       
-      pageResults.forEach((result, index) => {
+      pageResults.forEach((result) => {
         const item = textContent.items.find((i: any) => i.str === result.match.str && i.transform.toString() === result.match.transform.toString());
         if (item) {
           const isCurrent = currentResultIndex !== -1 && searchResults[currentResultIndex].pageIndex === result.pageIndex && searchResults[currentResultIndex].match === result.match;
@@ -121,7 +122,7 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
   }, []);
 
   const goToNextPage = useCallback(() => {
-    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+    setCurrentPage((prev) => Math.min(totalPages, prev - 1));
   }, [totalPages]);
 
   const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,17 +144,17 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
 
   const zoomIn = () => setZoomLevel((prev) => Math.min(200, prev + 10));
   const zoomOut = () => setZoomLevel((prev) => Math.max(50, prev - 10));
-
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pdfDoc || !searchQuery) {
+  
+  const performSearch = useCallback(async (query: string) => {
+    if (!pdfDoc || !query) {
       setSearchResults([]);
       setCurrentResultIndex(-1);
       return;
     }
+
     setIsSearching(true);
     const results: SearchResult[] = [];
-    const lowerCaseQuery = searchQuery.toLowerCase();
+    const lowerCaseQuery = query.toLowerCase();
 
     for (let i = 1; i <= pdfDoc.numPages; i++) {
       const page = await pdfDoc.getPage(i);
@@ -164,6 +165,7 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
         }
       });
     }
+
     setSearchResults(results);
     if (results.length > 0) {
       setCurrentResultIndex(0);
@@ -172,7 +174,37 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
       setCurrentResultIndex(-1);
     }
     setIsSearching(false);
+  }, [pdfDoc]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Clear results immediately if query is empty
+    if (!query) {
+      setSearchResults([]);
+      setCurrentResultIndex(-1);
+      return;
+    }
+
+    setIsSearching(true);
+    searchTimeoutRef.current = window.setTimeout(() => {
+      performSearch(query);
+    }, 500); // 500ms debounce delay
   };
+  
+  useEffect(() => {
+    // Cleanup timeout on unmount
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const goToResult = (index: number) => {
     if (index < 0 || index >= searchResults.length) return;
@@ -188,13 +220,13 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
         </div>
         <div className="flex items-center gap-2 ml-4">
            {/* Search */}
-           <form onSubmit={handleSearch} className="flex items-center gap-2">
+           <div className="flex items-center gap-2">
             <div className="relative">
               <input
                 type="search"
                 placeholder="Search..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="bg-slate-100 rounded-md py-1.5 pl-8 pr-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-teal-500 w-48"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
@@ -202,7 +234,7 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
               </div>
             </div>
              {isSearching && <span className="text-sm text-slate-400">Searching...</span>}
-             {searchResults.length > 0 && (
+             {searchQuery && !isSearching && searchResults.length > 0 && (
               <div className="flex items-center gap-1 text-sm">
                 <span className="text-slate-600">{currentResultIndex + 1} of {searchResults.length}</span>
                 <button onClick={() => goToResult(currentResultIndex - 1)} disabled={currentResultIndex <= 0} className="p-1 rounded-full text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -213,7 +245,10 @@ const BookReader: React.FC<BookReaderProps> = ({ book, onClose }) => {
                 </button>
               </div>
             )}
-          </form>
+             {searchQuery && !isSearching && searchResults.length === 0 && (
+                <span className="text-sm text-slate-500">No results</span>
+             )}
+          </div>
 
           <div className="border-l border-slate-200 h-6 mx-2"></div>
           {/* Zoom & Close */}
