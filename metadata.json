@@ -1,0 +1,5 @@
+{
+  "name": "Proreader Offline Book Reader",
+  "description": "An offline book reader application to manage and read your books and documents in various formats. Keep track of your reading progress, organize your library, and enjoy a clean, modern interface.",
+  "requestFramePermissions": []
+}
