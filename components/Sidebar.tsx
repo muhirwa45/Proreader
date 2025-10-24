@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  ReadingNowIcon, BookOpenIcon, FavoritesIcon, ClockIcon, HaveReadIcon, UserIcon, SeriesIcon,
+  BookOpenIcon, FavoritesIcon, ClockIcon, HaveReadIcon, UserIcon, SeriesIcon,
   CollectionsIcon, FormatsIcon, FolderIcon, DownloadIcon, TrashIcon, SettingsIcon, PencilIcon
 } from './icons/index';
 import type { Collection } from '../types';
@@ -14,7 +14,6 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { icon: ReadingNowIcon, label: 'Reading Now' },
   { icon: BookOpenIcon, label: 'Books & documents' },
   { icon: FavoritesIcon, label: 'Favorites' },
   { icon: ClockIcon, label: 'To Read' },
