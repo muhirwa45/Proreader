@@ -1,8 +1,8 @@
-# ReadEra: Offline Book Reader - How It Works
+# Proreader: Offline Book Reader - How It Works
 
 ## Overview
 
-ReadEra is a client-side web application built with React and TypeScript that allows users to upload, manage, and read their digital books and documents directly in the browser. It's designed to be a personal, offline-first library with a clean, modern, and themeable user interface. All user data, including uploaded books, remains on the user's device and is not sent to any server.
+Proreader is a client-side web application built with React and TypeScript that allows users to upload, manage, and read their digital books and documents directly in the browser. It's designed to be a personal, offline-first library with a clean, modern, and themeable user interface. All user data, including uploaded books, remains on the user's device and is not sent to any server.
 
 ## Core Features
 
